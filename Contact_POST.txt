@@ -1,0 +1,46 @@
+Request URL: https://api.joistapp.com/api/v7/194935/contacts
+Request Method: POST
+Status Code: 200 OK
+Remote Address: 54.225.96.219:443
+Referrer Policy: strict-origin-when-cross-origin
+Access-Control-Allow-Methods: GET, POST, DELETE, PUT, OPTIONS, HEAD
+Access-Control-Allow-Origin: https://my.joistapp.com
+Access-Control-Expose-Headers: Link
+Access-Control-Max-Age: 1728000
+Cache-Control: max-age=0, private, must-revalidate
+Connection: keep-alive
+Content-Encoding: gzip
+Content-Security-Policy: default-src 'self' *.cloudfront.net; font-src 'self' fonts.gstatic.com netdna.bootstrapcdn.com *.cloudfront.net; script-src 'self' 'unsafe-inline' js-agent.newrelic.com bam.nr-data.net *.cloudfront.net; style-src 'self' 'unsafe-inline' fonts.googleapis.com netdna.bootstrapcdn.com *.cloudfront.net; worker-src 'self' *.joisttest.com *.joistapp.com blob:
+Content-Type: application/json; charset=utf-8
+Date: Fri, 30 Oct 2020 21:03:30 GMT
+Etag: W/"47099259b2255d3e55e0f2097af7587d"
+Server: Cowboy
+Set-Cookie: _joist_site_session=; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT
+Strict-Transport-Security: max-age=631138519
+Transfer-Encoding: chunked
+Vary: Accept-Encoding, Origin
+Via: 1.1 vegur
+X-Content-Type-Options: nosniff
+X-Download-Options: noopen
+X-Frame-Options: sameorigin
+X-Permitted-Cross-Domain-Policies: none
+X-Rack-Cors: hit
+X-Request-Id: fe2c5f78-c6db-44c3-994a-ab6dd5df1490
+X-Runtime: 0.026845
+X-Xss-Protection: 1; mode=block
+Accept: application/json
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-US,en;q=0.9
+Connection: keep-alive
+Content-Length: 200
+Content-Type: application/json; charset=UTF-8
+Host: api.joistapp.com
+Origin: https://my.joistapp.com
+Referer: https://my.joistapp.com/
+Sec-Fetch-Dest: empty
+Sec-Fetch-Mode: cors
+Sec-Fetch-Site: same-site
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36 Edg/86.0.622.56
+X-Api-Authorization: Joist-Token 194935:yydz27d91UGVwRfUHHMP
+{,…}
+{"contact":{"name":"Test Testophersons","notes":null,"deleted":false,"emails":[{"type":"home","value":"none@example.com  "}],"phone_numbers":[{"type":"mobile","value":"123-456-7890"},{"type":"home","value":null}],"address":{"street":null,"suite":null,"city":null,"state":null,"zip":null}}}

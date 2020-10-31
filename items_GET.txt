@@ -1,0 +1,45 @@
+Request URL: https://api.joistapp.com/api/v7/194935/items?t=1604092037301
+Request Method: GET
+Status Code: 200 OK
+Remote Address: 54.225.96.219:443
+Referrer Policy: strict-origin-when-cross-origin
+Access-Control-Allow-Methods: GET, POST, DELETE, PUT, OPTIONS, HEAD
+Access-Control-Allow-Origin: https://my.joistapp.com
+Access-Control-Expose-Headers: Link
+Access-Control-Max-Age: 1728000
+Cache-Control: public
+Connection: keep-alive
+Content-Encoding: gzip
+Content-Security-Policy: default-src 'self' *.cloudfront.net; font-src 'self' fonts.gstatic.com netdna.bootstrapcdn.com *.cloudfront.net; script-src 'self' 'unsafe-inline' js-agent.newrelic.com bam.nr-data.net *.cloudfront.net; style-src 'self' 'unsafe-inline' fonts.googleapis.com netdna.bootstrapcdn.com *.cloudfront.net; worker-src 'self' *.joisttest.com *.joistapp.com blob:
+Content-Type: application/json; charset=utf-8
+Date: Fri, 30 Oct 2020 21:07:16 GMT
+Etag: W/"6f96cf29bdf56d7aac115473cec71053"
+Last-Modified: Wed, 21 Oct 2020 04:24:30 GMT
+Link: <https://api.joistapp.com/api/v7/194935/items?page=2&t=1604092037301>; rel="next", <https://api.joistapp.com/api/v7/194935/items?page=9&t=1604092037301>; rel="last"
+Server: Cowboy
+Set-Cookie: _joist_site_session=; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT
+Strict-Transport-Security: max-age=631138519
+Transfer-Encoding: chunked
+Vary: Accept-Encoding, Origin
+Via: 1.1 vegur
+X-Content-Type-Options: nosniff
+X-Download-Options: noopen
+X-Frame-Options: sameorigin
+X-Permitted-Cross-Domain-Policies: none
+X-Rack-Cors: hit
+X-Request-Id: 135decb0-0f79-4e0c-baa9-0e8318f4f72e
+X-Runtime: 0.340924
+X-Xss-Protection: 1; mode=block
+Accept: application/json
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-US,en;q=0.9
+Connection: keep-alive
+Host: api.joistapp.com
+Origin: https://my.joistapp.com
+Referer: https://my.joistapp.com/
+Sec-Fetch-Dest: empty
+Sec-Fetch-Mode: cors
+Sec-Fetch-Site: same-site
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36 Edg/86.0.622.56
+X-Api-Authorization: Joist-Token 194935:yydz27d91UGVwRfUHHMP
+t: 1604092037301
