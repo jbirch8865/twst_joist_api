@@ -1,8 +1,8 @@
 {
   "service": {
-    "service": "twst_joist_api",
+    "service": "twst-joist-api",
     "serviceObject": {
-      "name": "twst_joist_api"
+      "name": "twst-joist-api"
     },
     "provider": {
       "stage": "prod",
@@ -72,13 +72,13 @@
           "WebLogGroup": {
             "Type": "AWS::Logs::LogGroup",
             "Properties": {
-              "LogGroupName": "/aws/lambda/twst_joist_api-prod-web"
+              "LogGroupName": "/aws/lambda/twst-joist-api-prod-web"
             }
           },
           "ArtisanLogGroup": {
             "Type": "AWS::Logs::LogGroup",
             "Properties": {
-              "LogGroupName": "/aws/lambda/twst_joist_api-prod-artisan"
+              "LogGroupName": "/aws/lambda/twst-joist-api-prod-artisan"
             }
           },
           "IamRoleLambdaExecution": {
@@ -106,7 +106,7 @@
                     "Fn::Join": [
                       "-",
                       [
-                        "twst_joist_api",
+                        "twst-joist-api",
                         "prod",
                         "lambda"
                       ]
@@ -123,7 +123,7 @@
                         ],
                         "Resource": [
                           {
-                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/twst_joist_api-prod*:*"
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/twst-joist-api-prod*:*"
                           }
                         ]
                       },
@@ -134,7 +134,7 @@
                         ],
                         "Resource": [
                           {
-                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/twst_joist_api-prod*:*:*"
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/twst-joist-api-prod*:*:*"
                           }
                         ]
                       }
@@ -147,7 +147,7 @@
                 "Fn::Join": [
                   "-",
                   [
-                    "twst_joist_api",
+                    "twst-joist-api",
                     "prod",
                     {
                       "Ref": "AWS::Region"
@@ -165,9 +165,9 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/twst_joist_api/prod/1604247139585-2020-11-01T16:12:19.585Z/twst_joist_api.zip"
+                "S3Key": "serverless/twst-joist-api/prod/1604261781363-2020-11-01T20:16:21.363Z/twst-joist-api.zip"
               },
-              "FunctionName": "twst_joist_api-prod-web",
+              "FunctionName": "twst-joist-api-prod-web",
               "Handler": "public/index.php",
               "MemorySize": 1024,
               "Role": {
@@ -186,14 +186,14 @@
               "WebLogGroup"
             ]
           },
-          "WebLambdaVersionqA2v0pIXTRQQdkv5rk1G6iKsvuTgjHL6rlda0f1V10Y": {
+          "WebLambdaVersionSXWTa7T14J7D3RyxrvpV9kpP92I0Bo0Xiy4X85CKu8M": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "WebLambdaFunction"
               },
-              "CodeSha256": "35CFR4i4hTuDfG8ByBhk+DPxCgrez4L8VUGO0LRXVmg="
+              "CodeSha256": "Tq4oYCP0uf4B7jvHGnAapjPmLK9k0J+DAg67BhtxiI0="
             }
           },
           "ArtisanLambdaFunction": {
@@ -203,9 +203,9 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/twst_joist_api/prod/1604247139585-2020-11-01T16:12:19.585Z/twst_joist_api.zip"
+                "S3Key": "serverless/twst-joist-api/prod/1604261781363-2020-11-01T20:16:21.363Z/twst-joist-api.zip"
               },
-              "FunctionName": "twst_joist_api-prod-artisan",
+              "FunctionName": "twst-joist-api-prod-artisan",
               "Handler": "artisan",
               "MemorySize": 1024,
               "Role": {
@@ -225,20 +225,20 @@
               "ArtisanLogGroup"
             ]
           },
-          "ArtisanLambdaVersioncvbOsz5DnMtyCn1ejFLBWKvpxCcehZmnpwI1fFsGic": {
+          "ArtisanLambdaVersioncCbJDWNknhBx2EfX4Yh4x30QJtW4Nm4axDzfh00of3I": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "ArtisanLambdaFunction"
               },
-              "CodeSha256": "35CFR4i4hTuDfG8ByBhk+DPxCgrez4L8VUGO0LRXVmg="
+              "CodeSha256": "Tq4oYCP0uf4B7jvHGnAapjPmLK9k0J+DAg67BhtxiI0="
             }
           },
           "ApiGatewayRestApi": {
             "Type": "AWS::ApiGateway::RestApi",
             "Properties": {
-              "Name": "prod-twst_joist_api",
+              "Name": "prod-twst-joist-api",
               "EndpointConfiguration": {
                 "Types": [
                   "EDGE"
@@ -351,7 +351,7 @@
               "MethodResponses": []
             }
           },
-          "ApiGatewayDeployment1604247130113": {
+          "ApiGatewayDeployment1604261750930": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -411,13 +411,13 @@
           "WebLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "WebLambdaVersionqA2v0pIXTRQQdkv5rk1G6iKsvuTgjHL6rlda0f1V10Y"
+              "Ref": "WebLambdaVersionSXWTa7T14J7D3RyxrvpV9kpP92I0Bo0Xiy4X85CKu8M"
             }
           },
           "ArtisanLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ArtisanLambdaVersioncvbOsz5DnMtyCn1ejFLBWKvpxCcehZmnpwI1fFsGic"
+              "Ref": "ArtisanLambdaVersioncCbJDWNknhBx2EfX4Yh4x30QJtW4Nm4axDzfh00of3I"
             }
           },
           "ServiceEndpoint": {
@@ -533,12 +533,12 @@
             "http": "ANY /{proxy+}"
           }
         ],
-        "name": "twst_joist_api-prod-web",
+        "name": "twst-joist-api-prod-web",
         "package": {},
         "memory": 1024,
         "runtime": "provided",
         "vpc": {},
-        "versionLogicalId": "WebLambdaVersionqA2v0pIXTRQQdkv5rk1G6iKsvuTgjHL6rlda0f1V10Y"
+        "versionLogicalId": "WebLambdaVersionSXWTa7T14J7D3RyxrvpV9kpP92I0Bo0Xiy4X85CKu8M"
       },
       "artisan": {
         "handler": "artisan",
@@ -547,19 +547,19 @@
           "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"ArtisanLambdaFunction\"][\"Properties\"][\"Layers\"]"
         },
         "events": [],
-        "name": "twst_joist_api-prod-artisan",
+        "name": "twst-joist-api-prod-artisan",
         "package": {},
         "memory": 1024,
         "runtime": "provided",
         "vpc": {},
-        "versionLogicalId": "ArtisanLambdaVersioncvbOsz5DnMtyCn1ejFLBWKvpxCcehZmnpwI1fFsGic"
+        "versionLogicalId": "ArtisanLambdaVersioncCbJDWNknhBx2EfX4Yh4x30QJtW4Nm4axDzfh00of3I"
       }
     },
     "configValidationMode": "warn",
     "serviceFilename": "serverless.yml",
     "layers": {},
     "initialServerlessConfig": {
-      "service": "twst_joist_api",
+      "service": "twst-joist-api",
       "provider": {
         "name": "aws",
         "region": "us-east-1",
@@ -574,8 +574,8 @@
           "storage/**",
           "tests/**"
         ],
-        "artifact": "/home/jbirch8865/repos/twst_request_joist/.serverless/twst_joist_api.zip",
-        "artifactDirectoryName": "serverless/twst_joist_api/prod/1604247139585-2020-11-01T16:12:19.585Z"
+        "artifact": "/home/jbirch8865/repos/twst_request_joist/.serverless/twst-joist-api.zip",
+        "artifactDirectoryName": "serverless/twst-joist-api/prod/1604261781363-2020-11-01T20:16:21.363Z"
       },
       "functions": {
         "$ref": "$[\"service\"][\"functions\"]"
@@ -585,10 +585,10 @@
       }
     },
     "isDashboardMonitoringPreconfigured": false,
-    "artifact": "/home/jbirch8865/repos/twst_request_joist/.serverless/twst_joist_api.zip"
+    "artifact": "/home/jbirch8865/repos/twst_request_joist/.serverless/twst-joist-api.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/twst_joist_api/prod/1604247139585-2020-11-01T16:12:19.585Z",
-    "artifact": "twst_joist_api.zip"
+    "artifactDirectoryName": "serverless/twst-joist-api/prod/1604261781363-2020-11-01T20:16:21.363Z",
+    "artifact": "twst-joist-api.zip"
   }
 }

@@ -1,4 +1,4 @@
-service: twst_joist_api
+service: twst-joist-api
 
 provider:
     name: aws

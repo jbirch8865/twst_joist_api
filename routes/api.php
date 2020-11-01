@@ -106,7 +106,13 @@ function Format_Notes(object $object): string
             }
         }
     }
+    $string .= Format_Timeline($object);
     return $string;
+}
+
+function Format_Timeline(object $object) :string 
+{
+    return "\n\n\nTIMELINE:\n";
 }
 
 function Get_Total_Number_Of_People(object $object): int
