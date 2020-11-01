@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
+use Mpdf\Tag\P;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,16 +26,16 @@ Route::post('/new_request', function (Request $request) {
         } else {
             return response()->json(["message" => "failed auth"], 401);
         }
+        die(json_encode(Build_Request_Body()));        
         $response = Http::withHeaders([
             'X-Api-Authorization' => 'Joist-Token ' . $joist_token->auth_token,
         ])->post('https://api.joistapp.com/api/v6/194935/estimates', Build_Request_Body());
         if ($response->status() === 422) {
             return response()->json(["message" => "failed"], 422);
         }
-        return response()->json(["message" => "success"]);
+        return response()->json(["message" => $response->body()]);
     }
 });
-
 
 function Build_Request_Body(): array
 {
@@ -70,7 +71,7 @@ function Build_Request_Body(): array
             "document_images_attributes" => [],
             "payment_requests_attributes" => [[
                 "_destroy" => false,
-                "amount" => (Get_Total_Number_Of_People($body) + 1) * 35,
+                "amount" => ((Get_Total_Number_Of_People($body) + 1) * 35) + Get_Other_Deposits($body),
                 "index" => 0,
                 "label" => "Deposit",
                 "payment_requestable_id" => null,
@@ -89,12 +90,12 @@ function Format_Notes(object $object): string
     foreach ($object as $category => $details) {
         if ($category !== "CONTACT_INFO") {
             if (is_object($details)) {
-                $string .= "\n\n" . $category;
+                $string .= "\n\n" . str_replace("_", " ", $category) . ":";
                 foreach ($details as $detail_name => $details_detail) {
                     if (is_object($details_detail)) {
-                        $string .= "\n" . $detail_name . " : ";
+                        $string .= "\n   " . $detail_name . " : ";
                         foreach ($details_detail as $details_sub_cat => $details_sub_details) {
-                            $string .= "\n-----" . $details_sub_cat . " : " . $details_sub_details;
+                            $string .= "\n      " . $details_sub_cat . " : " . $details_sub_details;
                         }
                     } else {
                         $string .= "\n" . $detail_name . " : " . $details_detail;
@@ -110,15 +111,219 @@ function Format_Notes(object $object): string
 
 function Get_Total_Number_Of_People(object $object): int
 {
-    return 1;
+    return
+        Get_Total_Number_Of_Leads($object) +
+        Get_Total_Number_Of_Server_Buffet($object) +
+        Get_Total_Number_Of_Kitchen($object) +
+        Get_Total_Number_Of_Server($object) +
+        Get_Total_Number_Of_Private_Server($object) +
+        Get_Total_Number_Of_BW_Bartenders($object) +
+        Get_Total_Number_Of_Liquor_Bartenders($object) +
+        Get_Total_Number_Of_Houseman($object);
 }
 
+function Get_Total_Number_Of_Leads(object $object): int
+{
+    if (
+        strpos($object->SERVICES_REQUESTED->STAFF_REQUESTED, "Floor waitstaff") !== false
+        || strpos($object->SERVICES_REQUESTED->STAFF_REQUESTED, "Buffet Staff") !== false
+        || strpos($object->SERVICES_REQUESTED->STAFF_REQUESTED, "Kitchen Aids/Cooks") !== false
+    ) {
+        if ($object->EVENT_DETAILS->EVENT_TYPE !== "Graduation" && $object->EVENT_DETAILS->EVENT_TYPE !== "House Party") {
+            if ($object->EVENT_DETAILS->EVENT_TYPE === "Cocktail Party") {
+                if ($object->EVENT_DETAILS->GUEST_COUNT >= 100 && $object->EVENT_DETAILS->GUEST_COUNT < 200) {
+                    return 1;
+                } elseif ($object->EVENT_DETAILS->GUEST_COUNT < 100) {
+                    return 0;
+                } else {
+                    return floor($object->EVENT_DETAILS->GUEST_COUNT / 200) + 1;
+                }
+            } else {
+                return floor($object->EVENT_DETAILS->GUEST_COUNT / 200) + 1;
+            }
+        }
+    }
+    return 0;
+}
+
+function Get_Total_Number_Of_Server_Buffet(object $object): int
+{
+    if ($object->EVENT_DETAILS->EVENT_TYPE !== "Cocktail Party" && $object->EVENT_DETAILS->EVENT_TYPE !== "House Party" && $object->EVENT_DETAILS->EVENT_TYPE !== "Graduation") {
+        if (strpos($object->SERVICES_REQUESTED->STAFF_REQUESTED, "Buffet Staff") !== false) {
+            if ($object->EVENT_DETAILS->GUEST_COUNT > 200) {
+                return floor($object->EVENT_DETAILS->GUEST_COUNT / 100);
+            } else {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+function Get_Total_Number_Of_Kitchen(object $object): int
+{
+    if ($object->EVENT_DETAILS->EVENT_TYPE !== "Cocktail Party" && $object->EVENT_DETAILS->EVENT_TYPE !== "House Party" && $object->EVENT_DETAILS->EVENT_TYPE !== "Graduation") {
+        if (strpos($object->SERVICES_REQUESTED->STAFF_REQUESTED, "Kitchen Aids/Cooks") !== false) {
+            if (strpos($object->TWST_CONTRACTED_TO_HELP_WITH->FOOD_SERVICE, "Plated - Family Style") !== false || strpos($object->TWST_CONTRACTED_TO_HELP_WITH->FOOD_SERVICE, "Plated - Full Service") !== false) {
+                return floor($object->EVENT_DETAILS->GUEST_COUNT / 35) + 1;
+            } else {
+                return floor($object->EVENT_DETAILS->GUEST_COUNT / 100) + 1;
+            }
+        }
+    }
+    return 0;
+}
+function Get_Total_Number_Of_Server(object $object): int
+{
+    if ($object->EVENT_DETAILS->EVENT_TYPE !== "Cocktail Party" && $object->EVENT_DETAILS->EVENT_TYPE !== "House Party" && $object->EVENT_DETAILS->EVENT_TYPE !== "Graduation") {
+        if (strpos($object->SERVICES_REQUESTED->STAFF_REQUESTED, "Floor waitstaff") !== false) {
+            if (
+                strpos(
+                    $object->TWST_CONTRACTED_TO_HELP_WITH->FOOD_SERVICE,
+                    "Tray Passing - Hors d'Ouevre"
+                ) !== false
+                && !strpos($object->TWST_CONTRACTED_TO_HELP_WITH->FOOD_SERVICE, "Buffet - Hors d'Ouevre") !== false
+                && !strpos($object->TWST_CONTRACTED_TO_HELP_WITH->FOOD_SERVICE, "Buffet") !== false
+                && !strpos($object->TWST_CONTRACTED_TO_HELP_WITH->FOOD_SERVICE, "Plated - Family Style") !== false
+                && !strpos($object->TWST_CONTRACTED_TO_HELP_WITH->FOOD_SERVICE, "Plated - Full Service") !== false
+            ) {
+                if ($object->TWST_CONTRACTED_TO_HELP_WITH->DISHWARE_TYPE === "Disposable") {
+                    return floor($object->EVENT_DETAILS->GUEST_COUNT / 75) + 1;
+                } else {
+                    return floor($object->EVENT_DETAILS->GUEST_COUNT / 50) + 1;
+                }
+            } elseif ((strpos($object->TWST_CONTRACTED_TO_HELP_WITH->FOOD_SERVICE, "Buffet - Hors d'Ouevre") !== false
+                    || strpos($object->TWST_CONTRACTED_TO_HELP_WITH->FOOD_SERVICE, "Buffet") !== false) &&
+                (!strpos($object->TWST_CONTRACTED_TO_HELP_WITH->FOOD_SERVICE, "Plated - Family Style") !== false
+                    && !strpos($object->TWST_CONTRACTED_TO_HELP_WITH->FOOD_SERVICE, "Plated - Full Service") !== false)
+            ) {
+                if ($object->TWST_CONTRACTED_TO_HELP_WITH->DISHWARE_TYPE === "Disposable") {
+                    return floor($object->EVENT_DETAILS->GUEST_COUNT / 50) + 1;
+                } else {
+                    return floor($object->EVENT_DETAILS->GUEST_COUNT / 35) + 1;
+                }
+            } elseif (
+                strpos($object->TWST_CONTRACTED_TO_HELP_WITH->FOOD_SERVICE, "Plated - Family Style") !== false
+                || strpos($object->TWST_CONTRACTED_TO_HELP_WITH->FOOD_SERVICE, "Plated - Full Service") !== false
+            ) {
+                if ($object->TWST_CONTRACTED_TO_HELP_WITH->DISHWARE_TYPE === "Disposable") {
+                    return floor($object->EVENT_DETAILS->GUEST_COUNT / 35) + 1;
+                } else {
+                    return floor($object->EVENT_DETAILS->GUEST_COUNT / 20) + 1;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+function Get_Total_Number_Of_Private_Server(object $object): int
+{
+    if ($object->EVENT_DETAILS->EVENT_TYPE === "Cocktail Party" || $object->EVENT_DETAILS->EVENT_TYPE === "House Party" || $object->EVENT_DETAILS->EVENT_TYPE === "Graduation") {
+        if (strpos($object->SERVICES_REQUESTED->STAFF_REQUESTED, "Floor waitstaff") !== false || strpos($object->SERVICES_REQUESTED->STAFF_REQUESTED, "Buffet Staff") !== false || strpos($object->SERVICES_REQUESTED->STAFF_REQUESTED, "Kitchen Aids/Cooks") !== false) {
+            if (
+                strpos($object->TWST_CONTRACTED_TO_HELP_WITH->FOOD_SERVICE, "Plated - Family Style") !== false
+                || strpos($object->TWST_CONTRACTED_TO_HELP_WITH->FOOD_SERVICE, "Plated - Full Service") !== false
+            ) {
+                return floor($object->EVENT_DETAILS->GUEST_COUNT / 20) + 1;
+            } else {
+                return floor($object->EVENT_DETAILS->GUEST_COUNT / 25) + 1;
+            }
+        }
+    }
+    return 0;
+}
+
+function Get_Total_Number_Of_Houseman(object $object): int
+{
+    return floor($object->EVENT_DETAILS->GUEST_COUNT / 200);
+}
+
+function Get_Total_Number_Of_BW_Bartenders(object $object): int
+{
+    if (strpos($object->SERVICES_REQUESTED->STAFF_REQUESTED, "Bartender(s)") !== false) {
+        if (
+            (strpos($object->TWST_CONTRACTED_TO_HELP_WITH->BEVERAGE_SERVICE, "Beer (Bottles)") !== false
+                || strpos($object->TWST_CONTRACTED_TO_HELP_WITH->BEVERAGE_SERVICE, "Beer (Kegs)") !== false
+                || strpos($object->TWST_CONTRACTED_TO_HELP_WITH->BEVERAGE_SERVICE, "Wine") !== false) &&
+            (!strpos($object->TWST_CONTRACTED_TO_HELP_WITH->BEVERAGE_SERVICE, "Signature Cocktails (1-4 pre-determined drinks)") !== false
+                && !strpos($object->TWST_CONTRACTED_TO_HELP_WITH->BEVERAGE_SERVICE, "Full Cocktail Bar") !== false)
+        ) {
+
+            if (
+                strpos($object->TWST_CONTRACTED_TO_HELP_WITH->FOOD_SERVICE, "Plated - Family Style") !== false
+                || strpos($object->TWST_CONTRACTED_TO_HELP_WITH->FOOD_SERVICE, "Plated - Full Service") !== false
+            ) {
+                return floor($object->EVENT_DETAILS->GUEST_COUNT / 80) + 1;
+            } else {
+                return floor($object->EVENT_DETAILS->GUEST_COUNT / 100) + 1;
+            }
+        }
+    }
+    return 0;
+}
+function Get_Total_Number_Of_Liquor_Bartenders(object $object): int
+{
+    if (strpos($object->SERVICES_REQUESTED->STAFF_REQUESTED, "Bartender(s)") !== false) {
+        if (
+            strpos($object->TWST_CONTRACTED_TO_HELP_WITH->BEVERAGE_SERVICE, "Signature Cocktails (1-4 pre-determined drinks)") !== false
+            || strpos($object->TWST_CONTRACTED_TO_HELP_WITH->BEVERAGE_SERVICE, "Full Cocktail Bar") !== false
+        ) {
+            if (
+                strpos($object->TWST_CONTRACTED_TO_HELP_WITH->FOOD_SERVICE, "Plated - Family Style") !== false
+                || strpos($object->TWST_CONTRACTED_TO_HELP_WITH->FOOD_SERVICE, "Plated - Full Service") !== false
+            ) {
+                return floor($object->EVENT_DETAILS->GUEST_COUNT / 50) + 1;
+            } else {
+                return floor($object->EVENT_DETAILS->GUEST_COUNT / 80) + 1;
+            }
+        }
+    }
+    return 0;
+}
 
 function Get_Items(object $object): array
 {
-    return [
-        Get_Booking_Fee_Item($object),
-    ];
+    $items = [Get_Booking_Fee_Item($object)];
+    $items = array_merge($items,Get_People_Items($object));
+    return $items;
+}
+
+function Get_People_Items(object $object)
+{
+    $items = [];
+    ForEach(Get_Lead_Items($object) as $lead_item)
+    {
+        $items[] = $lead_item;
+    }
+    ForEach(Get_Server_Buffet_Items($object) as $lead_item)
+    {
+        $items[] = $lead_item;
+    }
+    ForEach(Get_Kitchen_Personnel_Items($object) as $lead_item)
+    {
+        $items[] = $lead_item;
+    }
+    ForEach(Get_Server_Items($object) as $lead_item)
+    {
+        $items[] = $lead_item;
+    }
+    ForEach(Get_Private_Server_Items($object) as $lead_item)
+    {
+        $items[] = $lead_item;
+    }
+    ForEach(Get_Houseman_Items($object) as $lead_item)
+    {
+        $items[] = $lead_item;
+    }
+    ForEach(Get_BW_Bartender_Items($object) as $lead_item)
+    {
+        $items[] = $lead_item;
+    }
+    ForEach(Get_Liquor_Bartender_Items($object) as $lead_item)
+    {
+        $items[] = $lead_item;
+    }
+    return $items;
 }
 
 function Get_Booking_Fee_Item(object $object): array
@@ -127,7 +332,7 @@ function Get_Booking_Fee_Item(object $object): array
         "_destroy" => false,
         "name" => "DOB - Booking fee - " . date('Y'),
         "unit" => null,
-        "price" => (Get_Total_Number_Of_People($object) + 1) * 35,
+        "price" => ((Get_Total_Number_Of_People($object) + 1) * 35) + Get_Other_Deposits($object),
         "quantity" => "1",
         "fixed_price" => null,
         "index" => 1,
@@ -138,4 +343,276 @@ function Get_Booking_Fee_Item(object $object): array
         "estimate_id" => null,
         "estimate_item_taxes_attributes" => []
     ];
+}
+
+function Get_Other_Deposits(object $object): float
+{
+    if (strpos($object->SERVICES_REQUESTED->PACKAGES_REQUESTED, "Portable Bar") !== false) {
+        return 50.00;
+    }
+    return 0.00;
+}
+
+function Get_Lead_Items(object $object) : array
+{
+    $x = 0;
+    $items = [];
+    while($x++ < Get_Total_Number_Of_Leads($object))
+    {
+        $items[] = [
+            "fixed_price"=> null,
+            "index"=> 0,
+            "name"=> "HRS - Lead",
+            "notes"=> "Event lead to manage staff and time line\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
+            "price"=> "50",
+            "quantity"=> "0",
+            "sample"=> false,
+            "unit"=> null,
+            "user_id"=> 194935,
+            "_destroy"=> false,
+            "deleted"=> false,
+            "estimate_id"=> null,
+            "estimate_item_taxes_attributes"=> [[
+                "amount" => "20",
+                "deleted" => false,
+                "estimate_item_id" => null,
+                "name" => "20% Tip",
+                "tax_id" => "313617",
+                "user_id" => 194935,
+                "_destroy" => false
+            ]]
+        ];
+    }
+    return $items;
+}
+
+function Get_Server_Buffet_Items(object $object) : array
+{
+    $x = 0;
+    $items = [];
+    while($x++ < Get_Total_Number_Of_Server_Buffet($object))
+    {
+        $items[] = [
+            "fixed_price"=> null,
+            "index"=> 0,
+            "name"=> "HRS - Buffet Server",
+            "notes"=> "Food service only (alcohol service prohibited)\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
+            "price"=> "35",
+            "quantity"=> "0",
+            "sample"=> false,
+            "unit"=> null,
+            "user_id"=> 194935,
+            "_destroy"=> false,
+            "deleted"=> false,
+            "estimate_id"=> null,
+            "estimate_item_taxes_attributes"=> [[
+                "amount" => "20",
+                "deleted" => false,
+                "estimate_item_id" => null,
+                "name" => "20% Tip",
+                "tax_id" => "313617",
+                "user_id" => 194935,
+                "_destroy" => false
+            ]]
+        ];
+    }
+    return $items;
+}
+
+function Get_Kitchen_Personnel_Items(object $object) : array
+{
+    $x = 0;
+    $items = [];
+    while($x++ < Get_Total_Number_Of_Kitchen($object))
+    {
+        $items[] = [
+            "fixed_price"=> null,
+            "index"=> 0,
+            "name"=> "HRS - Cook / Kitchen aid",
+            "notes"=> "Food service only (alcohol service prohibited)\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
+            "price"=> "30",
+            "quantity"=> "0",
+            "sample"=> false,
+            "unit"=> null,
+            "user_id"=> 194935,
+            "_destroy"=> false,
+            "deleted"=> false,
+            "estimate_id"=> null,
+            "estimate_item_taxes_attributes"=> [[
+                "amount" => "20",
+                "deleted" => false,
+                "estimate_item_id" => null,
+                "name" => "20% Tip",
+                "tax_id" => "313617",
+                "user_id" => 194935,
+                "_destroy" => false
+            ]]
+        ];
+    }
+    return $items;
+}
+
+function Get_Server_Items(object $object) : array
+{
+    $x = 0;
+    $items = [];
+    while($x++ < Get_Total_Number_Of_Server($object))
+    {
+        $items[] = [
+            "fixed_price"=> null,
+            "index"=> 0,
+            "name"=> "HRS - Server",
+            "notes"=> "Food service only (alcohol service prohibited)\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
+            "price"=> "35",
+            "quantity"=> "0",
+            "sample"=> false,
+            "unit"=> null,
+            "user_id"=> 194935,
+            "_destroy"=> false,
+            "deleted"=> false,
+            "estimate_id"=> null,
+            "estimate_item_taxes_attributes"=> [[
+                "amount" => "20",
+                "deleted" => false,
+                "estimate_item_id" => null,
+                "name" => "20% Tip",
+                "tax_id" => "313617",
+                "user_id" => 194935,
+                "_destroy" => false
+            ]]
+        ];
+    }
+    return $items;
+}
+
+function Get_Private_Server_Items(object $object) : array
+{
+    $x = 0;
+    $items = [];
+    while($x++ < Get_Total_Number_Of_Private_Server($object))
+    {
+        $items[] = [
+            "fixed_price"=> null,
+            "index"=> 0,
+            "name"=> "HRS - Private Party Server",
+            "notes"=> "General party maintenance\nFood prep and minimal cooking\nSet up & Clean up\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
+            "price"=> "40",
+            "quantity"=> "0",
+            "sample"=> false,
+            "unit"=> null,
+            "user_id"=> 194935,
+            "_destroy"=> false,
+            "deleted"=> false,
+            "estimate_id"=> null,
+            "estimate_item_taxes_attributes"=> [[
+                "amount" => "20",
+                "deleted" => false,
+                "estimate_item_id" => null,
+                "name" => "20% Tip",
+                "tax_id" => "313617",
+                "user_id" => 194935,
+                "_destroy" => false
+            ]]
+        ];
+    }
+    return $items;
+}
+
+function Get_Houseman_Items(object $object) : array
+{
+    $x = 0;
+    $items = [];
+    while($x++ < Get_Total_Number_Of_Houseman($object))
+    {
+        $items[] = [
+            "fixed_price"=> null,
+            "index"=> 0,
+            "name"=> "HRS - Houseman",
+            "notes"=> "[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
+            "price"=> "30",
+            "quantity"=> "0",
+            "sample"=> false,
+            "unit"=> null,
+            "user_id"=> 194935,
+            "_destroy"=> false,
+            "deleted"=> false,
+            "estimate_id"=> null,
+            "estimate_item_taxes_attributes"=> [[
+                "amount" => "20",
+                "deleted" => false,
+                "estimate_item_id" => null,
+                "name" => "20% Tip",
+                "tax_id" => "313617",
+                "user_id" => 194935,
+                "_destroy" => false
+            ]]
+        ];
+    }
+    return $items;
+}
+
+function Get_BW_Bartender_Items(object $object) : array
+{
+    $x = 0;
+    $items = [];
+    while($x++ < Get_Total_Number_Of_BW_Bartenders($object))
+    {
+        $items[] = [
+            "fixed_price"=> null,
+            "index"=> 0,
+            "name"=> "HRS - Bartender - B/W",
+            "notes"=> "Beer, wine, champagne, no mixed drinks\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
+            "price"=> "45",
+            "quantity"=> "0",
+            "sample"=> false,
+            "unit"=> null,
+            "user_id"=> 194935,
+            "_destroy"=> false,
+            "deleted"=> false,
+            "estimate_id"=> null,
+            "estimate_item_taxes_attributes"=> [[
+                "amount" => "20",
+                "deleted" => false,
+                "estimate_item_id" => null,
+                "name" => "20% Tip",
+                "tax_id" => "313617",
+                "user_id" => 194935,
+                "_destroy" => false
+            ]]
+        ];
+    }
+    return $items;
+}
+
+function Get_Liquor_Bartender_Items(object $object) : array
+{
+    $x = 0;
+    $items = [];
+    while($x++ < Get_Total_Number_Of_Liquor_Bartenders($object))
+    {
+        $items[] = [
+            "fixed_price"=> null,
+            "index"=> 0,
+            "name"=> "HRS - Bartender - Liquor",
+            "notes"=> "All Alcohol Service\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
+            "price"=> "50",
+            "quantity"=> "0",
+            "sample"=> false,
+            "unit"=> null,
+            "user_id"=> 194935,
+            "_destroy"=> false,
+            "deleted"=> false,
+            "estimate_id"=> null,
+            "estimate_item_taxes_attributes"=> [[
+                "amount" => "20",
+                "deleted" => false,
+                "estimate_item_id" => null,
+                "name" => "20% Tip",
+                "tax_id" => "313617",
+                "user_id" => 194935,
+                "_destroy" => false
+            ]]
+        ];
+    }
+    return $items;
 }
