@@ -71,7 +71,7 @@ function Build_Request_Body(): array
             "payment_requests_attributes" => [[
                 "_destroy" => false,
                 "amount" => ((Get_Total_Number_Of_People($body) + 1) * 35) + Get_Other_Deposits($body),
-                "index" => 0,
+                "index" => 1,
                 "label" => "Deposit",
                 "payment_requestable_id" => null,
                 "payment_requestable_type" => "Estimate",
@@ -220,7 +220,7 @@ function Get_Lead_Items(object $object): array
     while ($x++ < Get_Total_Number_Of_Leads($object)) {
         $items[] = [
             "fixed_price" => null,
-            "index" => 0,
+            "index" => 1,
             "name" => "HRS - Lead",
             "notes" => "Event lead to manage staff and time line\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
             "price" => "50",
@@ -252,7 +252,7 @@ function Get_Server_Buffet_Items(object $object): array
     while ($x++ < Get_Total_Number_Of_Server_Buffet($object)) {
         $items[] = [
             "fixed_price" => null,
-            "index" => 0,
+            "index" => 1,
             "name" => "HRS - Buffet Server",
             "notes" => "Food service only (alcohol service prohibited)\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
             "price" => "35",
@@ -284,7 +284,7 @@ function Get_Kitchen_Personnel_Items(object $object): array
     while ($x++ < Get_Total_Number_Of_Kitchen($object)) {
         $items[] = [
             "fixed_price" => null,
-            "index" => 0,
+            "index" => 1,
             "name" => "HRS - Cook / Kitchen aid",
             "notes" => "Food service only (alcohol service prohibited)\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
             "price" => "30",
@@ -316,7 +316,7 @@ function Get_Server_Items(object $object): array
     while ($x++ < Get_Total_Number_Of_Server($object)) {
         $items[] = [
             "fixed_price" => null,
-            "index" => 0,
+            "index" => 1,
             "name" => "HRS - Server",
             "notes" => "Food service only (alcohol service prohibited)\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
             "price" => "35",
@@ -348,7 +348,7 @@ function Get_Private_Server_Items(object $object): array
     while ($x++ < Get_Total_Number_Of_Private_Server($object)) {
         $items[] = [
             "fixed_price" => null,
-            "index" => 0,
+            "index" => 1,
             "name" => "HRS - Private Party Server",
             "notes" => "General party maintenance\nFood prep and minimal cooking\nSet up & Clean up\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
             "price" => "40",
@@ -380,7 +380,7 @@ function Get_Houseman_Items(object $object): array
     while ($x++ < Get_Total_Number_Of_Houseman($object)) {
         $items[] = [
             "fixed_price" => null,
-            "index" => 0,
+            "index" => 1,
             "name" => "HRS - Houseman",
             "notes" => "[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
             "price" => "30",
@@ -412,7 +412,7 @@ function Get_BW_Bartender_Items(object $object): array
     while ($x++ < Get_Total_Number_Of_BW_Bartenders($object)) {
         $items[] = [
             "fixed_price" => null,
-            "index" => 0,
+            "index" => 1,
             "name" => "HRS - Bartender - B/W",
             "notes" => "Beer, wine, champagne, no mixed drinks\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
             "price" => "45",
@@ -444,7 +444,7 @@ function Get_Liquor_Bartender_Items(object $object): array
     while ($x++ < Get_Total_Number_Of_Liquor_Bartenders($object)) {
         $items[] = [
             "fixed_price" => null,
-            "index" => 0,
+            "index" => 1,
             "name" => "HRS - Bartender - Liquor",
             "notes" => "All Alcohol Service\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
             "price" => "50",
