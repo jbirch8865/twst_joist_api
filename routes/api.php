@@ -26,14 +26,13 @@ Route::post('/new_request', function (Request $request) {
         } else {
             return response()->json(["message" => "failed auth"], 401);
         }
-        die(json_encode(Build_Request_Body()));        
         $response = Http::withHeaders([
             'X-Api-Authorization' => 'Joist-Token ' . $joist_token->auth_token,
         ])->post('https://api.joistapp.com/api/v6/194935/estimates', Build_Request_Body());
         if ($response->status() === 422) {
             return response()->json(["message" => "failed"], 422);
         }
-        return response()->json(["message" => $response->body()]);
+        return response()->json(["message" => "success response - " . $response->body()]);
     }
 });
 
@@ -110,11 +109,369 @@ function Format_Notes(object $object): string
     return $string;
 }
 
-function Format_Timeline(object $object) :string 
+function Format_Timeline(object $object): string
 {
     return "\n\n\nTIMELINE:\n";
 }
 
+function Get_Items(object $object): array
+{
+    $items = array_merge(Get_Booking_Fee_Item($object), Get_People_Items($object), Get_Packages_Requested_Items($object));
+    return $items;
+}
+
+function Get_Booking_Fee_Item(object $object): array
+{
+    return [[
+        "_destroy" => false,
+        "name" => "DOB - Booking fee - " . date('Y'),
+        "unit" => null,
+        "price" => ((Get_Total_Number_Of_People($object) + 1) * 35),
+        "quantity" => "1",
+        "ordinal" => "1",
+        "fixed_price" => null,
+        "index" => 0,
+        "notes" => "$70 for first staff person + $35 per each additional staffing\n",
+        "sample" => false,
+        "user_id" => 194935,
+        "deleted" => false,
+        "estimate_id" => null,
+        "estimate_item_taxes_attributes" => []
+    ]];
+}
+
+function Get_People_Items(object $object)
+{
+    $items = [];
+    foreach (Get_Lead_Items($object) as $lead_item) {
+        $items[] = $lead_item;
+    }
+    foreach (Get_Server_Buffet_Items($object) as $lead_item) {
+        $items[] = $lead_item;
+    }
+    foreach (Get_Kitchen_Personnel_Items($object) as $lead_item) {
+        $items[] = $lead_item;
+    }
+    foreach (Get_Server_Items($object) as $lead_item) {
+        $items[] = $lead_item;
+    }
+    foreach (Get_Private_Server_Items($object) as $lead_item) {
+        $items[] = $lead_item;
+    }
+    foreach (Get_Houseman_Items($object) as $lead_item) {
+        $items[] = $lead_item;
+    }
+    foreach (Get_BW_Bartender_Items($object) as $lead_item) {
+        $items[] = $lead_item;
+    }
+    foreach (Get_Liquor_Bartender_Items($object) as $lead_item) {
+        $items[] = $lead_item;
+    }
+    return $items;
+}
+
+function Get_Other_Deposits(object $object): float
+{
+    if (strpos($object->SERVICES_REQUESTED->PACKAGES_REQUESTED, "Portable Bar") !== false) {
+        return 50.00;
+    }
+    return 0.00;
+}
+
+
+function Get_Packages_Requested_Items(object $object): array
+{
+    $items = [];
+    $packages_requested = explode(",", $object->SERVICES_REQUESTED->PACKAGES_REQUESTED);
+    foreach ($packages_requested as $package) {
+        switch ($package) {
+            case ' Portable Bar':
+                $items[] = [
+                    "_destroy" => false,
+                    "name" => "DOC - Rental - Bar - Rustic Portable Bar",
+                    "unit" => null,
+                    "price" => 235,
+                    "quantity" => "1",
+                    "fixed_price" => null,
+                    "index" => 2,
+                    "notes" => "Rustic portable bar\n6' table with black floor length linen\n$50 deposit due upon booking",
+                    "sample" => false,
+                    "user_id" => 194935,
+                    "deleted" => false,
+                    "estimate_id" => null,
+                    "estimate_item_taxes_attributes" => []
+                ];
+                break;
+            default:
+                # code...
+                break;
+        }
+    }
+    return $items;
+}
+
+
+
+///PEOPLE ITEMS
+function Get_Lead_Items(object $object): array
+{
+    $x = 0;
+    $items = [];
+    while ($x++ < Get_Total_Number_Of_Leads($object)) {
+        $items[] = [
+            "fixed_price" => null,
+            "index" => 0,
+            "name" => "HRS - Lead",
+            "notes" => "Event lead to manage staff and time line\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
+            "price" => "50",
+            "quantity" => "0",
+            "sample" => false,
+            "unit" => null,
+            "user_id" => 194935,
+            "_destroy" => false,
+            "deleted" => false,
+            "estimate_id" => null,
+            "estimate_item_taxes_attributes" => [[
+                "amount" => "20",
+                "deleted" => false,
+                "estimate_item_id" => null,
+                "name" => "20% Tip",
+                "tax_id" => "313617",
+                "user_id" => 194935,
+                "_destroy" => false
+            ]]
+        ];
+    }
+    return $items;
+}
+
+function Get_Server_Buffet_Items(object $object): array
+{
+    $x = 0;
+    $items = [];
+    while ($x++ < Get_Total_Number_Of_Server_Buffet($object)) {
+        $items[] = [
+            "fixed_price" => null,
+            "index" => 0,
+            "name" => "HRS - Buffet Server",
+            "notes" => "Food service only (alcohol service prohibited)\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
+            "price" => "35",
+            "quantity" => "0",
+            "sample" => false,
+            "unit" => null,
+            "user_id" => 194935,
+            "_destroy" => false,
+            "deleted" => false,
+            "estimate_id" => null,
+            "estimate_item_taxes_attributes" => [[
+                "amount" => "20",
+                "deleted" => false,
+                "estimate_item_id" => null,
+                "name" => "20% Tip",
+                "tax_id" => "313617",
+                "user_id" => 194935,
+                "_destroy" => false
+            ]]
+        ];
+    }
+    return $items;
+}
+
+function Get_Kitchen_Personnel_Items(object $object): array
+{
+    $x = 0;
+    $items = [];
+    while ($x++ < Get_Total_Number_Of_Kitchen($object)) {
+        $items[] = [
+            "fixed_price" => null,
+            "index" => 0,
+            "name" => "HRS - Cook / Kitchen aid",
+            "notes" => "Food service only (alcohol service prohibited)\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
+            "price" => "30",
+            "quantity" => "0",
+            "sample" => false,
+            "unit" => null,
+            "user_id" => 194935,
+            "_destroy" => false,
+            "deleted" => false,
+            "estimate_id" => null,
+            "estimate_item_taxes_attributes" => [[
+                "amount" => "20",
+                "deleted" => false,
+                "estimate_item_id" => null,
+                "name" => "20% Tip",
+                "tax_id" => "313617",
+                "user_id" => 194935,
+                "_destroy" => false
+            ]]
+        ];
+    }
+    return $items;
+}
+
+function Get_Server_Items(object $object): array
+{
+    $x = 0;
+    $items = [];
+    while ($x++ < Get_Total_Number_Of_Server($object)) {
+        $items[] = [
+            "fixed_price" => null,
+            "index" => 0,
+            "name" => "HRS - Server",
+            "notes" => "Food service only (alcohol service prohibited)\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
+            "price" => "35",
+            "quantity" => "0",
+            "sample" => false,
+            "unit" => null,
+            "user_id" => 194935,
+            "_destroy" => false,
+            "deleted" => false,
+            "estimate_id" => null,
+            "estimate_item_taxes_attributes" => [[
+                "amount" => "20",
+                "deleted" => false,
+                "estimate_item_id" => null,
+                "name" => "20% Tip",
+                "tax_id" => "313617",
+                "user_id" => 194935,
+                "_destroy" => false
+            ]]
+        ];
+    }
+    return $items;
+}
+
+function Get_Private_Server_Items(object $object): array
+{
+    $x = 0;
+    $items = [];
+    while ($x++ < Get_Total_Number_Of_Private_Server($object)) {
+        $items[] = [
+            "fixed_price" => null,
+            "index" => 0,
+            "name" => "HRS - Private Party Server",
+            "notes" => "General party maintenance\nFood prep and minimal cooking\nSet up & Clean up\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
+            "price" => "40",
+            "quantity" => "0",
+            "sample" => false,
+            "unit" => null,
+            "user_id" => 194935,
+            "_destroy" => false,
+            "deleted" => false,
+            "estimate_id" => null,
+            "estimate_item_taxes_attributes" => [[
+                "amount" => "20",
+                "deleted" => false,
+                "estimate_item_id" => null,
+                "name" => "20% Tip",
+                "tax_id" => "313617",
+                "user_id" => 194935,
+                "_destroy" => false
+            ]]
+        ];
+    }
+    return $items;
+}
+
+function Get_Houseman_Items(object $object): array
+{
+    $x = 0;
+    $items = [];
+    while ($x++ < Get_Total_Number_Of_Houseman($object)) {
+        $items[] = [
+            "fixed_price" => null,
+            "index" => 0,
+            "name" => "HRS - Houseman",
+            "notes" => "[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
+            "price" => "30",
+            "quantity" => "0",
+            "sample" => false,
+            "unit" => null,
+            "user_id" => 194935,
+            "_destroy" => false,
+            "deleted" => false,
+            "estimate_id" => null,
+            "estimate_item_taxes_attributes" => [[
+                "amount" => "20",
+                "deleted" => false,
+                "estimate_item_id" => null,
+                "name" => "20% Tip",
+                "tax_id" => "313617",
+                "user_id" => 194935,
+                "_destroy" => false
+            ]]
+        ];
+    }
+    return $items;
+}
+
+function Get_BW_Bartender_Items(object $object): array
+{
+    $x = 0;
+    $items = [];
+    while ($x++ < Get_Total_Number_Of_BW_Bartenders($object)) {
+        $items[] = [
+            "fixed_price" => null,
+            "index" => 0,
+            "name" => "HRS - Bartender - B/W",
+            "notes" => "Beer, wine, champagne, no mixed drinks\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
+            "price" => "45",
+            "quantity" => "0",
+            "sample" => false,
+            "unit" => null,
+            "user_id" => 194935,
+            "_destroy" => false,
+            "deleted" => false,
+            "estimate_id" => null,
+            "estimate_item_taxes_attributes" => [[
+                "amount" => "20",
+                "deleted" => false,
+                "estimate_item_id" => null,
+                "name" => "20% Tip",
+                "tax_id" => "313617",
+                "user_id" => 194935,
+                "_destroy" => false
+            ]]
+        ];
+    }
+    return $items;
+}
+
+function Get_Liquor_Bartender_Items(object $object): array
+{
+    $x = 0;
+    $items = [];
+    while ($x++ < Get_Total_Number_Of_Liquor_Bartenders($object)) {
+        $items[] = [
+            "fixed_price" => null,
+            "index" => 0,
+            "name" => "HRS - Bartender - Liquor",
+            "notes" => "All Alcohol Service\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
+            "price" => "50",
+            "quantity" => "0",
+            "sample" => false,
+            "unit" => null,
+            "user_id" => 194935,
+            "_destroy" => false,
+            "deleted" => false,
+            "estimate_id" => null,
+            "estimate_item_taxes_attributes" => [[
+                "amount" => "20",
+                "deleted" => false,
+                "estimate_item_id" => null,
+                "name" => "20% Tip",
+                "tax_id" => "313617",
+                "user_id" => 194935,
+                "_destroy" => false
+            ]]
+        ];
+    }
+    return $items;
+}
+
+
+
+////PEOPLE NUMBERS
 function Get_Total_Number_Of_People(object $object): int
 {
     return
@@ -285,340 +642,4 @@ function Get_Total_Number_Of_Liquor_Bartenders(object $object): int
         }
     }
     return 0;
-}
-
-function Get_Items(object $object): array
-{
-    $items = [Get_Booking_Fee_Item($object)];
-    $items = array_merge($items,Get_People_Items($object));
-    return $items;
-}
-
-function Get_People_Items(object $object)
-{
-    $items = [];
-    ForEach(Get_Lead_Items($object) as $lead_item)
-    {
-        $items[] = $lead_item;
-    }
-    ForEach(Get_Server_Buffet_Items($object) as $lead_item)
-    {
-        $items[] = $lead_item;
-    }
-    ForEach(Get_Kitchen_Personnel_Items($object) as $lead_item)
-    {
-        $items[] = $lead_item;
-    }
-    ForEach(Get_Server_Items($object) as $lead_item)
-    {
-        $items[] = $lead_item;
-    }
-    ForEach(Get_Private_Server_Items($object) as $lead_item)
-    {
-        $items[] = $lead_item;
-    }
-    ForEach(Get_Houseman_Items($object) as $lead_item)
-    {
-        $items[] = $lead_item;
-    }
-    ForEach(Get_BW_Bartender_Items($object) as $lead_item)
-    {
-        $items[] = $lead_item;
-    }
-    ForEach(Get_Liquor_Bartender_Items($object) as $lead_item)
-    {
-        $items[] = $lead_item;
-    }
-    return $items;
-}
-
-function Get_Booking_Fee_Item(object $object): array
-{
-    return [
-        "_destroy" => false,
-        "name" => "DOB - Booking fee - " . date('Y'),
-        "unit" => null,
-        "price" => ((Get_Total_Number_Of_People($object) + 1) * 35) + Get_Other_Deposits($object),
-        "quantity" => "1",
-        "fixed_price" => null,
-        "index" => 1,
-        "notes" => "$70 for first staff person + $35 per each additional staffsing\n",
-        "sample" => false,
-        "user_id" => 194935,
-        "deleted" => false,
-        "estimate_id" => null,
-        "estimate_item_taxes_attributes" => []
-    ];
-}
-
-function Get_Other_Deposits(object $object): float
-{
-    if (strpos($object->SERVICES_REQUESTED->PACKAGES_REQUESTED, "Portable Bar") !== false) {
-        return 50.00;
-    }
-    return 0.00;
-}
-
-function Get_Lead_Items(object $object) : array
-{
-    $x = 0;
-    $items = [];
-    while($x++ < Get_Total_Number_Of_Leads($object))
-    {
-        $items[] = [
-            "fixed_price"=> null,
-            "index"=> 0,
-            "name"=> "HRS - Lead",
-            "notes"=> "Event lead to manage staff and time line\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
-            "price"=> "50",
-            "quantity"=> "0",
-            "sample"=> false,
-            "unit"=> null,
-            "user_id"=> 194935,
-            "_destroy"=> false,
-            "deleted"=> false,
-            "estimate_id"=> null,
-            "estimate_item_taxes_attributes"=> [[
-                "amount" => "20",
-                "deleted" => false,
-                "estimate_item_id" => null,
-                "name" => "20% Tip",
-                "tax_id" => "313617",
-                "user_id" => 194935,
-                "_destroy" => false
-            ]]
-        ];
-    }
-    return $items;
-}
-
-function Get_Server_Buffet_Items(object $object) : array
-{
-    $x = 0;
-    $items = [];
-    while($x++ < Get_Total_Number_Of_Server_Buffet($object))
-    {
-        $items[] = [
-            "fixed_price"=> null,
-            "index"=> 0,
-            "name"=> "HRS - Buffet Server",
-            "notes"=> "Food service only (alcohol service prohibited)\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
-            "price"=> "35",
-            "quantity"=> "0",
-            "sample"=> false,
-            "unit"=> null,
-            "user_id"=> 194935,
-            "_destroy"=> false,
-            "deleted"=> false,
-            "estimate_id"=> null,
-            "estimate_item_taxes_attributes"=> [[
-                "amount" => "20",
-                "deleted" => false,
-                "estimate_item_id" => null,
-                "name" => "20% Tip",
-                "tax_id" => "313617",
-                "user_id" => 194935,
-                "_destroy" => false
-            ]]
-        ];
-    }
-    return $items;
-}
-
-function Get_Kitchen_Personnel_Items(object $object) : array
-{
-    $x = 0;
-    $items = [];
-    while($x++ < Get_Total_Number_Of_Kitchen($object))
-    {
-        $items[] = [
-            "fixed_price"=> null,
-            "index"=> 0,
-            "name"=> "HRS - Cook / Kitchen aid",
-            "notes"=> "Food service only (alcohol service prohibited)\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
-            "price"=> "30",
-            "quantity"=> "0",
-            "sample"=> false,
-            "unit"=> null,
-            "user_id"=> 194935,
-            "_destroy"=> false,
-            "deleted"=> false,
-            "estimate_id"=> null,
-            "estimate_item_taxes_attributes"=> [[
-                "amount" => "20",
-                "deleted" => false,
-                "estimate_item_id" => null,
-                "name" => "20% Tip",
-                "tax_id" => "313617",
-                "user_id" => 194935,
-                "_destroy" => false
-            ]]
-        ];
-    }
-    return $items;
-}
-
-function Get_Server_Items(object $object) : array
-{
-    $x = 0;
-    $items = [];
-    while($x++ < Get_Total_Number_Of_Server($object))
-    {
-        $items[] = [
-            "fixed_price"=> null,
-            "index"=> 0,
-            "name"=> "HRS - Server",
-            "notes"=> "Food service only (alcohol service prohibited)\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
-            "price"=> "35",
-            "quantity"=> "0",
-            "sample"=> false,
-            "unit"=> null,
-            "user_id"=> 194935,
-            "_destroy"=> false,
-            "deleted"=> false,
-            "estimate_id"=> null,
-            "estimate_item_taxes_attributes"=> [[
-                "amount" => "20",
-                "deleted" => false,
-                "estimate_item_id" => null,
-                "name" => "20% Tip",
-                "tax_id" => "313617",
-                "user_id" => 194935,
-                "_destroy" => false
-            ]]
-        ];
-    }
-    return $items;
-}
-
-function Get_Private_Server_Items(object $object) : array
-{
-    $x = 0;
-    $items = [];
-    while($x++ < Get_Total_Number_Of_Private_Server($object))
-    {
-        $items[] = [
-            "fixed_price"=> null,
-            "index"=> 0,
-            "name"=> "HRS - Private Party Server",
-            "notes"=> "General party maintenance\nFood prep and minimal cooking\nSet up & Clean up\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
-            "price"=> "40",
-            "quantity"=> "0",
-            "sample"=> false,
-            "unit"=> null,
-            "user_id"=> 194935,
-            "_destroy"=> false,
-            "deleted"=> false,
-            "estimate_id"=> null,
-            "estimate_item_taxes_attributes"=> [[
-                "amount" => "20",
-                "deleted" => false,
-                "estimate_item_id" => null,
-                "name" => "20% Tip",
-                "tax_id" => "313617",
-                "user_id" => 194935,
-                "_destroy" => false
-            ]]
-        ];
-    }
-    return $items;
-}
-
-function Get_Houseman_Items(object $object) : array
-{
-    $x = 0;
-    $items = [];
-    while($x++ < Get_Total_Number_Of_Houseman($object))
-    {
-        $items[] = [
-            "fixed_price"=> null,
-            "index"=> 0,
-            "name"=> "HRS - Houseman",
-            "notes"=> "[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
-            "price"=> "30",
-            "quantity"=> "0",
-            "sample"=> false,
-            "unit"=> null,
-            "user_id"=> 194935,
-            "_destroy"=> false,
-            "deleted"=> false,
-            "estimate_id"=> null,
-            "estimate_item_taxes_attributes"=> [[
-                "amount" => "20",
-                "deleted" => false,
-                "estimate_item_id" => null,
-                "name" => "20% Tip",
-                "tax_id" => "313617",
-                "user_id" => 194935,
-                "_destroy" => false
-            ]]
-        ];
-    }
-    return $items;
-}
-
-function Get_BW_Bartender_Items(object $object) : array
-{
-    $x = 0;
-    $items = [];
-    while($x++ < Get_Total_Number_Of_BW_Bartenders($object))
-    {
-        $items[] = [
-            "fixed_price"=> null,
-            "index"=> 0,
-            "name"=> "HRS - Bartender - B/W",
-            "notes"=> "Beer, wine, champagne, no mixed drinks\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
-            "price"=> "45",
-            "quantity"=> "0",
-            "sample"=> false,
-            "unit"=> null,
-            "user_id"=> 194935,
-            "_destroy"=> false,
-            "deleted"=> false,
-            "estimate_id"=> null,
-            "estimate_item_taxes_attributes"=> [[
-                "amount" => "20",
-                "deleted" => false,
-                "estimate_item_id" => null,
-                "name" => "20% Tip",
-                "tax_id" => "313617",
-                "user_id" => 194935,
-                "_destroy" => false
-            ]]
-        ];
-    }
-    return $items;
-}
-
-function Get_Liquor_Bartender_Items(object $object) : array
-{
-    $x = 0;
-    $items = [];
-    while($x++ < Get_Total_Number_Of_Liquor_Bartenders($object))
-    {
-        $items[] = [
-            "fixed_price"=> null,
-            "index"=> 0,
-            "name"=> "HRS - Bartender - Liquor",
-            "notes"=> "All Alcohol Service\n[start_time] - [end_time]\n+ [drive_time] HRS Drive Time",
-            "price"=> "50",
-            "quantity"=> "0",
-            "sample"=> false,
-            "unit"=> null,
-            "user_id"=> 194935,
-            "_destroy"=> false,
-            "deleted"=> false,
-            "estimate_id"=> null,
-            "estimate_item_taxes_attributes"=> [[
-                "amount" => "20",
-                "deleted" => false,
-                "estimate_item_id" => null,
-                "name" => "20% Tip",
-                "tax_id" => "313617",
-                "user_id" => 194935,
-                "_destroy" => false
-            ]]
-        ];
-    }
-    return $items;
 }

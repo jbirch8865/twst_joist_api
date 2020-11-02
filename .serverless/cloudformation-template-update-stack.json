@@ -152,7 +152,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/twst-joist-api/prod/1604261781363-2020-11-01T20:16:21.363Z/twst-joist-api.zip"
+          "S3Key": "serverless/twst-joist-api/prod/1604264145774-2020-11-01T20:55:45.774Z/twst-joist-api.zip"
         },
         "FunctionName": "twst-joist-api-prod-web",
         "Handler": "public/index.php",
@@ -173,14 +173,14 @@
         "WebLogGroup"
       ]
     },
-    "WebLambdaVersionSXWTa7T14J7D3RyxrvpV9kpP92I0Bo0Xiy4X85CKu8M": {
+    "WebLambdaVersionLTNMdgPXgN7cnYb2YFyWi5eyHnwa2H54q9BmtClhJdo": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "WebLambdaFunction"
         },
-        "CodeSha256": "Tq4oYCP0uf4B7jvHGnAapjPmLK9k0J+DAg67BhtxiI0="
+        "CodeSha256": "fH2J3k+pDb0EQy0CddRaZccnvcl/N27Ds1RXSj3zqNQ="
       }
     },
     "ArtisanLambdaFunction": {
@@ -190,7 +190,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/twst-joist-api/prod/1604261781363-2020-11-01T20:16:21.363Z/twst-joist-api.zip"
+          "S3Key": "serverless/twst-joist-api/prod/1604264145774-2020-11-01T20:55:45.774Z/twst-joist-api.zip"
         },
         "FunctionName": "twst-joist-api-prod-artisan",
         "Handler": "artisan",
@@ -212,14 +212,14 @@
         "ArtisanLogGroup"
       ]
     },
-    "ArtisanLambdaVersioncCbJDWNknhBx2EfX4Yh4x30QJtW4Nm4axDzfh00of3I": {
+    "ArtisanLambdaVersionzycf8sD0F1ILxkEgBFLh5kAe7agiSGmD4ru7AATAeI": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "ArtisanLambdaFunction"
         },
-        "CodeSha256": "Tq4oYCP0uf4B7jvHGnAapjPmLK9k0J+DAg67BhtxiI0="
+        "CodeSha256": "fH2J3k+pDb0EQy0CddRaZccnvcl/N27Ds1RXSj3zqNQ="
       }
     },
     "ApiGatewayRestApi": {
@@ -338,7 +338,7 @@
         "MethodResponses": []
       }
     },
-    "ApiGatewayDeployment1604261750930": {
+    "ApiGatewayDeployment1604264115501": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -398,13 +398,13 @@
     "WebLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "WebLambdaVersionSXWTa7T14J7D3RyxrvpV9kpP92I0Bo0Xiy4X85CKu8M"
+        "Ref": "WebLambdaVersionLTNMdgPXgN7cnYb2YFyWi5eyHnwa2H54q9BmtClhJdo"
       }
     },
     "ArtisanLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ArtisanLambdaVersioncCbJDWNknhBx2EfX4Yh4x30QJtW4Nm4axDzfh00of3I"
+        "Ref": "ArtisanLambdaVersionzycf8sD0F1ILxkEgBFLh5kAe7agiSGmD4ru7AATAeI"
       }
     },
     "ServiceEndpoint": {
